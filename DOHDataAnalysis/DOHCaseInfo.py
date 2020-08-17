@@ -10,7 +10,7 @@ pd.set_option('display.max_colwidth', None)
 
 # The csv file from DOH updated every day at 10:00 AM (Philippine Standard Time)
 # I encounter error in downloading the file directly since it comes from Google Drive
-case_info = 'DOH COVID Data Drop_ 20200811 - 04 Case Information.csv'
+case_info = 'DOH COVID Data Drop_ 20200816 - 04 Case Information.csv'
 
 df_case_info = pd.read_csv(case_info, parse_dates=[4, 5, 6, 7, 8, 10, 18], low_memory=False)
 # Fill those rows with no values in RemovalType as "Active" and in RegionRes as "Unknown Region"
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     # Calculate how many days it take to get the result of a positive case
     days_positive = df_case_info['DateResultRelease'] - df_case_info['DateSpecimen']
     days_positive = days_positive / np.timedelta64(1, 'D')
-    print("August 4, 2020\n")
+    print("August 16, 2020\n")
     print('Average days of getting a positive result:', days_positive.mean())
     # Calculate how many days it take to confirm a positive case
     days_confirmed = df_case_info['DateRepConf'] - df_case_info['DateSpecimen']
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     all_cases['CONFIRMED'] = confirmed_cases
     all_cases = all_cases.fillna({'ACTIVE': 0, 'DIED': 0, 'RECOVERED': 0, 'CONFIRMED': 0})
     all_cases = all_cases.astype({'ACTIVE': 'int64', 'DIED': 'int64', 'RECOVERED': 'int64'})
-    all_cases.to_excel('DOH COVID-19 Cases Per Region - 20200811.xlsx')
+    all_cases.to_excel('DOH COVID-19 Cases Per Region - 20200816.xlsx')
 
     # Graphing the number of cases per day based on confirmation day
     confirmed_series = df_case_info.pivot_table(index=df_case_info['DateRepConf'], aggfunc='size')
@@ -58,6 +58,11 @@ if __name__ == '__main__':
                                                              (~ df_case_info['DateDied'].isna())])
     print("Dead but with date of recovery:", df_case_info.loc[(df_case_info['RemovalType'] == 'DIED') &
                                                               (~ df_case_info['DateRecover'].isna())])
+
+    # Checking the number of cases per city
+    # No total confirmed cases row yet, only active, died, and recovered
+    city_residence = df_case_info.groupby(['ProvRes', 'CityMunRes', 'RemovalType']).size()
+    city_residence.to_excel('DOH COVID-19 Cases Per Cities - 20200816.xlsx')
 
     confirmed_frame = {'Confirmed': confirmed_series}
     confirmed_reported_df = pd.DataFrame(confirmed_frame)
