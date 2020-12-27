@@ -26,12 +26,16 @@ df_case_info = df_case_info.fillna({'RemovalType': 'ACTIVE', 'RegionRes': 'Unkno
 
                                                                                                        'Province'})
 df_case_info['RemovalType'] = df_case_info['RemovalType'].str.upper()
-df_case_info['DateRepConf'] = pd.to_datetime(df_case_info['DateRepConf'], yearfirst=True)
+# df_case_info['DateRepConf'] = pd.to_datetime(df_case_info['DateRepConf'], yearfirst=True)
 
-
+# print(df_case_info.head())
 # Getting the number of cases per day (for the past one week)
-last_week_dt = dt.now() - td(days=8)
-yesterday_dt = dt.now() - td(days=1)
+# Standardize the time so the comparison would not give unnecessary result (only date is included in the data set)
+last_week_dt = (dt.now() - td(days=8)).replace(hour=0, minute=0, second=0, microsecond=0)
+print(last_week_dt)
+# Yesterday in reference to the previous day of the date on the data set
+yesterday_dt = (dt.now() - td(days=2)).replace(hour=0, minute=0, second=0, microsecond=0)
+print(yesterday_dt)
 filtered_data = df_case_info[(df_case_info['DateRepConf'] >= last_week_dt) & (df_case_info['DateRepConf'] <= yesterday_dt)]
 filtered_data_confirmed = pd.pivot_table(filtered_data, index='ProvRes', aggfunc='size')
 filtered_data_all = pd.pivot_table(filtered_data, index='ProvRes', columns='RemovalType', aggfunc='size')
@@ -39,3 +43,11 @@ filtered_data_all['CONFIRMED'] = filtered_data_confirmed
 filtered_data_all = filtered_data_all.fillna({'ACTIVE': 0, 'DIED': 0, 'RECOVERED': 0, 'CONFIRMED': 0})
 filtered_data_all = filtered_data_all.astype({'ACTIVE': 'int64', 'DIED': 'int64', 'RECOVERED': 'int64'})
 filtered_data_all.to_excel('DOH COVID-19 Cases Per Province (Last One Week) - ' + yesterday + '.xlsx')
+
+filtered_data_region = df_case_info[(df_case_info['DateRepConf'] >= last_week_dt) & (df_case_info['DateRepConf'] <= yesterday_dt)]
+filtered_data_confirmed_region = pd.pivot_table(filtered_data_region, index='RegionRes', aggfunc='size')
+filtered_data_all_region = pd.pivot_table(filtered_data_region, index='RegionRes', columns='RemovalType', aggfunc='size')
+filtered_data_all_region['CONFIRMED'] = filtered_data_confirmed_region
+filtered_data_all_region = filtered_data_all_region.fillna({'ACTIVE': 0, 'DIED': 0, 'RECOVERED': 0, 'CONFIRMED': 0})
+filtered_data_all_region = filtered_data_all_region.astype({'ACTIVE': 'int64', 'DIED': 'int64', 'RECOVERED': 'int64'})
+filtered_data_all_region.to_excel('DOH COVID-19 Cases Per Region (Last One Week) - ' + yesterday + '.xlsx')
