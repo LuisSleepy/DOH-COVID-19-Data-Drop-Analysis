@@ -1,3 +1,16 @@
+"""
+DOH COVID-19 Data Drop Overall Analysis
+
+This program can determine the number of COVID-19 cases in the Philippines based on health status and residence.
+The data drop that should be used on this program is the data drop the last day.
+Example: If today is Monday, use the Sunday data drop.
+
+Author:
+Jan Luis Antoc
+BS Computer Engineering
+De La Salle University - Manila
+"""
+
 import pandas as pd
 import plotly.graph_objects as go
 import numpy as np
@@ -9,22 +22,20 @@ pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
 pd.set_option('display.max_colwidth', None)
 
-# The csv file from DOH updated every day at 10:00 AM (Philippine Standard Time)
-# I encounter error in downloading the file directly since it comes from Google Drive
+# Currently no way to automate the download of the DOH COVID-19 Data Drop each day
 yesterday = (datetime.date(datetime.today()) - timedelta(days=1)).strftime("%Y%m%d")
 case_info = 'DOH COVID Data Drop_ ' + yesterday + ' - 04 Case Information.csv'
 
 df_case_info = pd.read_csv(case_info, parse_dates=[4, 5, 6, 7, 8, 10, 18], low_memory=False)
-# Fill those rows with no values in RemovalType as "Active" and in RegionRes as "Unknown Region"
 
 # Making sure that those cases with NCR and ROF as region of residence will also use the same for province
 missing_prov = df_case_info['ProvRes'].isna()
 mapping_NCR_ROF = dict({'NCR': 'NCR', 'ROF': 'ROF'})
+df_case_info.loc[missing_prov, 'ProvRes'] = df_case_info.loc[missing_prov, 'RegionRes'].map(mapping_NCR_ROF)
 
 # Filling other NA values
-df_case_info.loc[missing_prov, 'ProvRes'] = df_case_info.loc[missing_prov, 'RegionRes'].map(mapping_NCR_ROF)
-df_case_info = df_case_info.fillna({'RemovalType': 'ACTIVE', 'RegionRes': 'Unknown Region', 'ProvRes': 'Unknown '
-                                                                                                       'Province'})
+df_case_info = df_case_info.fillna({'RemovalType': 'ACTIVE', 'RegionRes': 'Unknown Region',
+                                    'ProvRes': 'Unknown Province', 'CityMunRes': 'Unknown City'})
 df_case_info['RemovalType'] = df_case_info['RemovalType'].str.upper()
 
 if __name__ == '__main__':
@@ -37,17 +48,14 @@ if __name__ == '__main__':
                                                                              df_case_info['DateRecover'].isna()]))
     print('Number of Cases with no Date of Confirmation: ', len(df_case_info[df_case_info['DateRepConf'].isna()]))
 
-    # Calculate how many days it take to get the result of a positive case
     days_positive = df_case_info['DateResultRelease'] - df_case_info['DateSpecimen']
     days_positive = days_positive / np.timedelta64(1, 'D')
     print('Average days of getting a positive result:', days_positive.mean())
-    # Calculate how many days it take to confirm a positive case
     days_confirmed = df_case_info['DateRepConf'] - df_case_info['DateSpecimen']
     days_confirmed = days_confirmed / np.timedelta64(1, 'D')
     print('Average days of confirming a positive case:', days_confirmed.mean())
 
-    # Automation of checking the number of cases per region
-    # Used for the weekly update of COVID-19 cases per region in Ang Pahayagang Plaridel
+    # Automation of retrieving the number of COVID-19 cases per region
     confirmed_cases = pd.pivot_table(df_case_info, index='RegionRes', aggfunc='size')
     all_cases_region = pd.pivot_table(df_case_info, index='RegionRes', columns='RemovalType', aggfunc='size')
     all_cases_region['CONFIRMED'] = confirmed_cases
@@ -55,7 +63,7 @@ if __name__ == '__main__':
     all_cases_region = all_cases_region.astype({'ACTIVE': 'int64', 'DIED': 'int64', 'RECOVERED': 'int64'})
     all_cases_region.to_excel('DOH COVID-19 Cases Per Region - ' + yesterday + '.xlsx')
 
-    # Based on province of residence
+    # Automation of retrieving the number of COVID-19 cases per province
     confirmed_cases = pd.pivot_table(df_case_info, index='ProvRes', aggfunc='size')
     all_cases_province = pd.pivot_table(df_case_info, index='ProvRes', columns='RemovalType', aggfunc='size')
     all_cases_province['CONFIRMED'] = confirmed_cases
@@ -65,11 +73,16 @@ if __name__ == '__main__':
 
     # Checking the number of cases per city
     # No total confirmed cases row yet, only active, died, and recovered
-    all_cases_city = df_case_info.groupby(['ProvRes', 'CityMunRes', 'RemovalType']).size()
-    all_cases_city.to_excel('DOH COVID-19 Cases Per Cities - ' + yesterday + '.xlsx')
+    confirmed_cases = pd.pivot_table(df_case_info, index=['ProvRes', 'CityMunRes'], aggfunc='size')
+    all_cases_city = pd.pivot_table(df_case_info, index=['ProvRes', 'CityMunRes'], columns='RemovalType',
+                                    aggfunc='size')
+    all_cases_city['CONFIRMED'] = confirmed_cases
+    all_cases_city = all_cases_city.fillna({'ACTIVE': 0, 'DIED': 0, 'RECOVERED': 0, 'CONFIRMED': 0})
+    all_cases_city = all_cases_city.astype({'ACTIVE': 'int64', 'DIED': 'int64', 'RECOVERED': 'int64'})
+    all_cases_city.to_excel('DOH COVID-19 Cases Per City - ' + yesterday + '.xlsx')
 
     '''
-    Succeeding line of codes, for graphing
+    Succeeding line of codes are for the data visualization of total confirmed cases, recoveries, and deaths
     '''
 
     # Graphing the number of cases per day based on confirmation day
