@@ -1,5 +1,17 @@
+"""
+DOH COVID-19 Data Drop Analysis on the Number of New Cases in the Last Week
+
+This program can determine the number of new COVID-19 cases in the Philippines in the past week based on
+health status and residence. Currently prioritizing the data drop of the previous day with respect to
+current day.
+
+Author:
+Jan Luis Antoc
+BS Computer Engineering
+De La Salle University - Manila
+"""
+
 import pandas as pd
-import numpy as np
 from datetime import datetime as dt, timedelta as td
 
 # These are modifications in displaying the DataFrame in the terminal
@@ -12,8 +24,9 @@ pd.set_option('display.max_colwidth', None)
 # I encounter error in downloading the file directly since it comes from Google Drive
 today = dt.date(dt.today())
 yesterday = (today - td(days=1)).strftime("%Y%m%d")
-last_week = (today - td(days=7))
 
+# testin on the same day of data drop release
+# case_info = 'DOH COVID Data Drop' + today.strftime("%Y%m%d") + ' 04 Case Information. csv'
 case_info = 'DOH COVID Data Drop_ ' + yesterday + ' - 04 Case Information.csv'
 
 df_case_info = pd.read_csv(case_info, parse_dates=[4, 5, 6, 7, 8, 10, 18], low_memory=False)
@@ -31,12 +44,18 @@ df_case_info['RemovalType'] = df_case_info['RemovalType'].str.upper()
 # print(df_case_info.head())
 # Getting the number of cases per day (for the past one week)
 # Standardize the time so the comparison would not give unnecessary result (only date is included in the data set)
-last_week_dt = (dt.now() - td(days=8)).replace(hour=0, minute=0, second=0, microsecond=0)
+last_week_dt = (dt.now() - td(days=7)).replace(hour=0, minute=0, second=0, microsecond=0)
 print(last_week_dt)
+# If testing on the same day of date of release of the data drop
+today_dt = dt.now().replace(hour=0, minute=0, second=0, microsecond=0)
+# print(today_dt)
 # Yesterday in reference to the previous day of the date on the data set
-yesterday_dt = (dt.now() - td(days=2)).replace(hour=0, minute=0, second=0, microsecond=0)
+yesterday_dt = (today_dt - td(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
 print(yesterday_dt)
-filtered_data = df_case_info[(df_case_info['DateRepConf'] >= last_week_dt) & (df_case_info['DateRepConf'] <= yesterday_dt)]
+
+
+filtered_data = df_case_info[(df_case_info['DateRepConf'] >= last_week_dt) & (df_case_info['DateRepConf'] <=
+                                                                              yesterday_dt)]
 filtered_data_confirmed = pd.pivot_table(filtered_data, index='ProvRes', aggfunc='size')
 filtered_data_all = pd.pivot_table(filtered_data, index='ProvRes', columns='RemovalType', aggfunc='size')
 filtered_data_all['CONFIRMED'] = filtered_data_confirmed
@@ -44,9 +63,11 @@ filtered_data_all = filtered_data_all.fillna({'ACTIVE': 0, 'DIED': 0, 'RECOVERED
 filtered_data_all = filtered_data_all.astype({'ACTIVE': 'int64', 'DIED': 'int64', 'RECOVERED': 'int64'})
 filtered_data_all.to_excel('DOH COVID-19 Cases Per Province (Last One Week) - ' + yesterday + '.xlsx')
 
-filtered_data_region = df_case_info[(df_case_info['DateRepConf'] >= last_week_dt) & (df_case_info['DateRepConf'] <= yesterday_dt)]
+filtered_data_region = df_case_info[(df_case_info['DateRepConf'] >= last_week_dt) & (df_case_info['DateRepConf'] <=
+                                                                                     yesterday_dt)]
 filtered_data_confirmed_region = pd.pivot_table(filtered_data_region, index='RegionRes', aggfunc='size')
-filtered_data_all_region = pd.pivot_table(filtered_data_region, index='RegionRes', columns='RemovalType', aggfunc='size')
+filtered_data_all_region = pd.pivot_table(filtered_data_region, index='RegionRes', columns='RemovalType',
+                                          aggfunc='size')
 filtered_data_all_region['CONFIRMED'] = filtered_data_confirmed_region
 filtered_data_all_region = filtered_data_all_region.fillna({'ACTIVE': 0, 'DIED': 0, 'RECOVERED': 0, 'CONFIRMED': 0})
 filtered_data_all_region = filtered_data_all_region.astype({'ACTIVE': 'int64', 'DIED': 'int64', 'RECOVERED': 'int64'})

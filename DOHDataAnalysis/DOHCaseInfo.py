@@ -2,8 +2,7 @@
 DOH COVID-19 Data Drop Overall Analysis
 
 This program can determine the number of COVID-19 cases in the Philippines based on health status and residence.
-The data drop that should be used on this program is the data drop the last day.
-Example: If today is Monday, use the Sunday data drop.
+Currently prioritizing the data drop of the previous day with respect to current day.
 
 Author:
 Jan Luis Antoc
@@ -23,7 +22,11 @@ pd.set_option('display.width', None)
 pd.set_option('display.max_colwidth', None)
 
 # Currently no way to automate the download of the DOH COVID-19 Data Drop each day
-yesterday = (datetime.date(datetime.today()) - timedelta(days=1)).strftime("%Y%m%d")
+today = datetime.date(datetime.today())
+yesterday = (today - timedelta(days=1)).strftime("%Y%m%d")
+
+# Testing on the same day of the data drop release
+# case_info = 'DOH COVID Data Drop_ ' + today.strftime("%Y%m%d") + ' - 04 Case Information.csv'
 case_info = 'DOH COVID Data Drop_ ' + yesterday + ' - 04 Case Information.csv'
 
 df_case_info = pd.read_csv(case_info, parse_dates=[4, 5, 6, 7, 8, 10, 18], low_memory=False)
