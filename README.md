@@ -1,9 +1,9 @@
 # DOH-COVID-19-Data-Drop-Analysis
 Provides automation for the analysis and representation of data in the latest Department of Health COVID-19 Data Drop in the Philippines.
 
-The following are the fully functional Python program in this repository:
-  DOHCaseInfo.py - Determines the number of total COVID-19 cases based on health status and residence
-  SevenDaysCases.py - Almost similar with DOHCaseInfo.py but only take into account the cases for the past seven days
+There are multiple programs in this repository wherein each program has its own usage, which could be read on its comments. This reposity will be constantly updated for revisions of the said programs or adding a new program that seeks other analysis or presentation regarding the data drop.
+
+Source of the link to the latest DOH COVID-19 Data Drop: https://doh.gov.ph/covid19tracker
 
 Author:
 Jan Luis Antoc
