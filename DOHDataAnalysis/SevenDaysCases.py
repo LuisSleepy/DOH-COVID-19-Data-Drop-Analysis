@@ -55,6 +55,7 @@ filtered_data_all = pd.pivot_table(filtered_data, index='ProvRes', columns='Remo
 filtered_data_all['CONFIRMED'] = filtered_data_confirmed
 filtered_data_all = filtered_data_all.fillna({'ACTIVE': 0, 'DIED': 0, 'RECOVERED': 0, 'CONFIRMED': 0})
 filtered_data_all = filtered_data_all.astype({'ACTIVE': 'int64', 'DIED': 'int64', 'RECOVERED': 'int64'})
+filtered_data_all = filtered_data_all.sort_values(by=['CONFIRMED'], ascending=False)
 filtered_data_all.to_excel('DOH COVID-19 Cases Per Province (Last One Week) - ' + yesterday + '.xlsx')
 
 filtered_data_region = df_case_info[(df_case_info['DateRepConf'] >= last_week_dt) & (df_case_info['DateRepConf'] <=
@@ -65,5 +66,6 @@ filtered_data_all_region = pd.pivot_table(filtered_data_region, index='RegionRes
 filtered_data_all_region['CONFIRMED'] = filtered_data_confirmed_region
 filtered_data_all_region = filtered_data_all_region.fillna({'ACTIVE': 0, 'DIED': 0, 'RECOVERED': 0, 'CONFIRMED': 0})
 filtered_data_all_region = filtered_data_all_region.astype({'ACTIVE': 'int64', 'DIED': 'int64', 'RECOVERED': 'int64'})
+filtered_data_all_region = filtered_data_all_region.sort_values(by=['CONFIRMED'], ascending=False)
 filtered_data_all_region.to_excel('DOH COVID-19 Cases Per Region (Last One Week) - ' + yesterday + '.xlsx')
 

@@ -51,6 +51,7 @@ if __name__ == '__main__':
                                                                              df_case_info['DateRecover'].isna()]))
     print('Number of Cases with no Date of Confirmation: ', len(df_case_info[df_case_info['DateRepConf'].isna()]))
 
+    # Caution: These average days below might not be accurate as no
     days_positive = df_case_info['DateResultRelease'] - df_case_info['DateSpecimen']
     days_positive = days_positive / np.timedelta64(1, 'D')
     print('Average days of getting a positive result:', days_positive.mean())
