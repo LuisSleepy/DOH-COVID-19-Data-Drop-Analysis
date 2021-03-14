@@ -35,9 +35,6 @@ df_case_info = df_case_info.fillna({'RemovalType': 'ACTIVE', 'RegionRes': 'Unkno
                                     'ProvRes': 'Unknown Province', 'CityMunRes': 'Unknown City'})
 df_case_info['RemovalType'] = df_case_info['RemovalType'].str.upper()
 
-five_cases = []
-five_cases_dates = []
-
 if __name__ == '__main__':
     # Last five days, including current date
     for i in range(5):
