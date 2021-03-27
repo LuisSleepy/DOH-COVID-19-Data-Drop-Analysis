@@ -56,10 +56,11 @@ if __name__ == '__main__':
 
     # Combine the two series, the previous one and the latest one
     combined_df = pd.merge(prev_confirmed_cases_df, pres_confirmed_cases_df, on=['City/Municipality', 'Province'])
+    presNum = pres_dt.strftime("%Y%m%d") + ' Addl Cases'
+    prevNum = prev_dt.strftime("%Y%m%d") + ' Addl Cases'
     combined_df['Change in Percentage'] = combined_df.apply(
         # Calculates the change (in percentage) of additional cases per city/municipality
-        lambda x: ((x[pres_dt.strftime("%Y%m%d") + ' Addl Cases'] - x[prev_dt.strftime("%Y%m%d") + ' Addl Cases']) /
-                 x[pres_dt.strftime("%Y%m%d") + ' Addl Cases']), axis=1
+        lambda z: ((z[presNum] - z[prevNum]) / z[prevNum]), axis=1
     )
 
     # Arrange the rows by the number of latest additional cases by descending order
